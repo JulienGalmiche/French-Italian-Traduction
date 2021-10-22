@@ -6,7 +6,7 @@ class Subsampling(tf.keras.layers.Layer):
     def __init__(self, **kwargs):
         super(Subsampling, self).__init__(**kwargs)
         self.conv_1 = tf.keras.layers.Conv2D(filters=256, kernel_size=3, strides=2,
-                           padding="SAME", activation="relu")
+                           padding="SAME", activation="relu", input_shape=[None,129,1])
         self.conv_2 = tf.keras.layers.Conv2D(filters=256, kernel_size=3, strides=2,
                            padding="SAME", activation="relu")
     
