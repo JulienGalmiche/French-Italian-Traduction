@@ -21,6 +21,6 @@ def positional_encoding(position, d_model):
     # apply cos to odd indices in the array; 2i+1
     angle_rads[:, 1::2] = np.cos(angle_rads[:, 1::2])
 
-    pos_encoding = angle_rads[np.newaxis, ..., np.newaxis]
+    pos_encoding = angle_rads[np.newaxis, ...]
     #pdb.set_trace()
     return tf.cast(pos_encoding, dtype=tf.float32)
