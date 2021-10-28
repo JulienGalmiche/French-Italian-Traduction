@@ -8,9 +8,7 @@ def get_angles(pos, i, d_model):
 
 def positional_encoding(position, d_model):
     if d_model % 2==1:
-        print(d_model)
         d_model +=1 #d_model has to be even
-        print(d_model)
     angle_rads = get_angles(np.arange(position)[:, np.newaxis],
                           np.arange(d_model)[np.newaxis, :],
                           d_model)

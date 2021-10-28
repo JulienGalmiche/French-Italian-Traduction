@@ -1,25 +1,29 @@
-from src.multiheadattention import MultiHeadAttention
-from src.tools import point_wise_feed_forward_network
+import tensorflow as tf
 
-class EncoderLayer(tf.keras.layers.Layer):
-    def __init__(self, d_model, n_head_att, dff,  rate=0.1):
-        super(EncoderLayer, self).__init__()
-        self.multihead = MultiHeadAttention(d_model, n_head_att)
-        self.dropout1 = tf.keras.layers.Dropout(rate)
-        self.norm_1 = tf.keras.layers.LayerNormalization()
-        self.feedforward = point_wise_feed_forward_network(d_model, dff)
-        self.dropout2 = tf.keras.layers.Dropout(rate)
-        self.norm_2 = tf.keras.layers.LayerNormalization()
-            
+from transformer_asr.src.encoder_layer import EncoderLayer
+from transformer_asr.src.subsampling import Subsampling
+from transformer_asr.src.positional_encoding import positional_encoding
+from transformer_asr.src.multiheadattention import MultiHeadAttention
+
+class Encoder(tf.keras.layers.Layer):
+    def __init__(self, d_model, n_head_att, dff, num_layers, rate=0.1):
+        super(Encoder, self).__init__()
+        self.d_model = d_model
+        self.num_layers = num_layers
+        self.subsampling = Subsampling(d_model)
+        self.enc_layers = [EncoderLayer(d_model, n_head_att, dff, rate)
+                       for _ in range(num_layers)]
+        self.dropout = tf.keras.layers.Dropout(rate)
+
         
-    def call(self, x, training, mask=None):
-        x_multi_head = self.multihead(x,x,x,mask)
-        attn_output = self.dropout1(x_multi_head, training=training)
-        output_norm = self.norm_1(attn_output+x)
-        output_feedforward = self.feedforward(output_norm)
-        attn_output = self.dropout2(output_feedforward, training=training)
-        output_norm_2 = self.norm_1(attn_output+output_norm)
-        return output_norm_2
+    def call(self, x, training, mask):
         
+        x = self.subsampling(x)
+        pos_emb = positional_encoding(x.shape[1], self.d_model) 
+        x += pos_emb 
+        x = self.dropout(x, training=training)
         
+        for i in range(self.num_layers):
+            x = self.enc_layers[i](x)
         
+        return x
